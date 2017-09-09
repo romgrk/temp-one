@@ -6,7 +6,7 @@ import { ap, map, all, set, view, over, lensPath, range } from 'ramda';
 /*
  * Number of cells after the edge of the visible area to render.
  */
-const CELLS_AROUND = 1
+const CELLS_AROUND = 2
 
 /*
  * Default dimensions of the different parts of the interface

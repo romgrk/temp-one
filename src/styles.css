@@ -82,6 +82,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  text-align: center;
   cursor: pointer;
   user-select: none;
   border-color: #ccc;
@@ -99,6 +100,6 @@ body {
   border: none;
   outline: none;
   background: none;
-  text-align: inherit;
+  text-align: inherit !important;
   padding: 0 5px;
 }

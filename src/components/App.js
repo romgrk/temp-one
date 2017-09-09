@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {
     Container
   , Header
+  , Tab
   , Button
 } from 'semantic-ui-react';
 import {
@@ -69,7 +70,7 @@ const samples = Object.values(samplesByID)
 }, 
 */
 
-const columnNames = [
+const datasetColumns = [
     'sample_id'
   , 'chip_antibody'
   , 'chip_antibody_provider'
@@ -78,7 +79,7 @@ const columnNames = [
   , 'reference_registry_id'
 ].map(s => ({ name: s }))
 
-const columnLenses = [
+const datasetLenses = [
     lensPath(['sample_id'])
   , lensPath(['experiment_attributes', 'chip_antibody'])
   , lensPath(['experiment_attributes', 'chip_antibody_provider'])
@@ -87,37 +88,121 @@ const columnLenses = [
   , lensPath(['experiment_attributes', 'reference_registry_id'])
 ]
 
-const getCellValue = (rowIndex, columnIndex, data) =>
-  view(columnLenses[columnIndex], data)
+const getDatasetValue = (rowIndex, columnIndex, data) =>
+  view(datasetLenses[columnIndex], data)
 
+
+/*
+    "MS048802": {
+      "biomaterial_type": "Primary Cell", 
+      "cell_type": "Monocyte", 
+      "cell_type_ontology_uri": "http://purl.obolibrary.org/obo/CL_0000576", 
+      "disease": "Rheumatoid Arthritis", 
+      "disease_ontology_uri": "http://ncit.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&code=C2884&ns=NCI_Thesaurus", 
+      "donor_age": "NA", 
+      "donor_age_unit": "year", 
+      "donor_ethnicity": "NA", 
+      "donor_health_status": "NA", 
+      "donor_id": "McGill0488", 
+      "donor_life_stage": "unknown", 
+      "donor_sex": "Unknown", 
+      "molecule": "genomic DNA", 
+      "sample_ontology_uri": "http://purl.obolibrary.org/obo/CL_0000576", 
+      "tissue_type": "venous blood", 
+      "tissue_type_ontology_uri": "http://purl.obolibrary.org/obo/UBERON_0013756"
+    }
+  }
+*/
+
+const sampleColumns = [
+    'biomaterial_type'
+  , 'cell_type'
+  , 'donor_id'
+  , 'donor_age'
+  , 'donor_age_unit'
+  , 'donor_ethnicity'
+  , 'sample_ontology_uri'
+].map(s => ({ name: s }))
+
+const sampleLenses = [
+    lensPath(['biomaterial_type'])
+  , lensPath(['cell_type'])
+  , lensPath(['donor_id'])
+  , lensPath(['donor_age'])
+  , lensPath(['donor_age_unit'])
+  , lensPath(['donor_ethnicity'])
+  , lensPath(['sample_ontology_uri'])
+]
+
+const getSampleValue = (rowIndex, columnIndex, data) =>
+  view(sampleLenses[columnIndex], data)
 
 
 class App extends Component {
   constructor() {
     super()
 
-    this.setCellValue = this.setCellValue.bind(this)
+    this.setDatasetValue = this.setDatasetValue.bind(this)
+    this.setSampleValue = this.setSampleValue.bind(this)
 
     this.state = {
-      datasets: datasets
+        datasets: datasets
+      , samples: samples
     }
   }
 
-  setCellValue(rowIndex, columnIndex, newValue) {
+  setDatasetValue(rowIndex, columnIndex, newValue) {
     const { datasets } = this.state
 
     const lens =
-      compose(lensPath([rowIndex]), columnLenses[columnIndex])
+      compose(lensPath([rowIndex]), datasetLenses[columnIndex])
 
     this.setState({
       datasets: set(lens, newValue, datasets)
     })
   }
 
+  setSampleValue(rowIndex, columnIndex, newValue) {
+    const { samples } = this.state
+
+    const lens =
+      compose(lensPath([rowIndex]), sampleLenses[columnIndex])
+
+    this.setState({
+      samples: set(lens, newValue, samples)
+    })
+  }
+
   render() {
     const {
-      datasets
+        datasets
+      , samples
     } = this.state
+
+    const datasetsTab = () => (
+      <DataGrid
+        key='datasets'
+        rows={datasets}
+        columns={datasetColumns}
+        getCellValue={getDatasetValue}
+        setCellValue={this.setDatasetValue}
+      />
+    )
+
+    const samplesTab = () => (
+      <DataGrid
+        key='samples'
+        rows={samples}
+        columns={sampleColumns}
+        getCellValue={getSampleValue}
+        setCellValue={this.setSampleValue}
+      />
+    )
+
+    const tabs = [
+        { menuItem: 'Datasets', render: datasetsTab }
+      , { menuItem: 'Samples',  render: samplesTab }
+    ]
 
     return (
       <div className="App">
@@ -129,12 +214,8 @@ class App extends Component {
           <br/>
           <br/>
 
-          <DataGrid
-            rows={datasets}
-            columns={columnNames}
-            getCellValue={getCellValue}
-            setCellValue={this.setCellValue}
-          />
+          <Tab panes={tabs} />
+
         </Container>
       </div>
     );
